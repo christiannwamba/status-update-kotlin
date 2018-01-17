@@ -18,6 +18,8 @@ import retrofit2.Response
 
 class MainActivity : AppCompatActivity() {
 
+    lateinit var pusher:Pusher
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -30,13 +32,13 @@ class MainActivity : AppCompatActivity() {
         // setup pusher to receive status update
         val options = PusherOptions()
         options.setCluster("eu")
-        val pusher = Pusher(PUSHER_API_KEY, options)
+        pusher = Pusher("64f07620013b1d0af347", options)
         val channel = pusher.subscribe("my-channel")
         channel.bind("my-event") { channelName, eventName, data ->
             val jsonObject = JSONObject(data)
             runOnUiThread { adapter.addMessage(jsonObject.getString("message")) }
         }
-        pusher.connect()
+        //pusher.connect()
 
         // post status to server
         buttonPost.setOnClickListener {
@@ -62,6 +64,16 @@ class MainActivity : AppCompatActivity() {
         if (view == null)
             view = View(this)
         imm.hideSoftInputFromWindow(view.windowToken, 0)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        pusher.connect()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        pusher.disconnect()
     }
 
 }
